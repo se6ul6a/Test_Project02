@@ -76,10 +76,10 @@ void scannerI2C();        // definicja funkcji skanowania magistrali I2C w poszu
 
 
 // How to write symbols on LCD - see docs folder
-byte termometr[8] = {0b00100,0b00110,0b00100,0b00110,0b00100,0b01110,0b01110,0b00000};
-byte kropla[8] = {0b00100,0b00100,0b01110,0b01110,0b10111,0b10111,0b01110,0b00000};
-byte stopnie[8] = {0b00010,0b00101,0b00010,0b00000,0b00000,0b00000,0b00000,0b00000};
-byte serce[8] = {0b00000,0b01010,0b11111,0b11111,0b01110,0b00100,0b00000};
+byte thermo[8] = {0b00100,0b00110,0b00100,0b00110,0b00100,0b01110,0b01110,0b00000};
+byte drop[8] = {0b00100,0b00100,0b01110,0b01110,0b10111,0b10111,0b01110,0b00000};
+byte degrees[8] = {0b00010,0b00101,0b00010,0b00000,0b00000,0b00000,0b00000,0b00000};
+byte heart[8] = {0b00000,0b01010,0b11111,0b11111,0b01110,0b00100,0b00000};
 byte bell[8]  = {0b00100,0b01110,0b01110,0b01110,0b11111,0b00000,0b00100};
 byte note[8]  = {0b00010,0b00011,0b00010,0b01110,0b11110,0b01100,0b00000};
 byte clock[8] = {0b00000,0b01110,0b10101,0b10111,0b10001,0b01110,0b00000};
@@ -96,10 +96,10 @@ void setup() {
   // lcd.begin(16, 2);              // inicjalizacja LCD bez I2C 16 znakow, 2 wiersze
   lcd.begin();                      // inicjalizacja LCD I2C - tu nie podajemy liczby wieszy i kolumn bo jest w definicji
   Wire.begin();                     // inicjalizacja I2C
-  lcd.createChar(0, termometr);
-  lcd.createChar(1, kropla);
-  lcd.createChar(2, stopnie);
-  lcd.createChar(3, serce);
+  lcd.createChar(0, thermo);
+  lcd.createChar(1, drop);
+  lcd.createChar(2, degrees);
+  lcd.createChar(3, heart);
   lcd.createChar(4, clock);
   
   lcd.home();
@@ -124,21 +124,21 @@ void loop() {
   }
  
   // wyswietlam dane na LCD
-  lcd.home();                         // ustawiam kursor na 0, 0 LCD
-  lcd.write((byte)0);                 // rzutuję ikonę termometr na typ byte i wyświetlam ją na lcd
+  lcd.home();                         // ustawiam kursor na 0,0 LCD
+  lcd.write((byte)0);                 // rzutuje ikonę termometr na typ byte i wyświetlam ją na lcd
   lcd.print(" ");
-  lcd.print(temp);                    // wypisuję zmienną temp
+  lcd.print(temp);                    // wypisuje zmienną temp
   lcd.print(" ");
-  lcd.write((byte)2);                 // rzutuję ikonę stopnie na typ byte i wyświetlam ją na lcd
+  lcd.write((byte)2);                 // rzutuje ikonę stopnie na typ byte i wyświetlam ją na lcd
   lcd.print("C");
-  lcd.setCursor(0, 1);                // ustawian kursor na drugi wiersz
-  lcd.write((byte)1);                 // rzutuję ikonę kropla na typ byte i wyświetlam ją na lcd
+  lcd.setCursor(0, 1);                // ustawiam kursor na drugi wiersz
+  lcd.write((byte)1);                 // rzutuje ikonę kropla na typ byte i wyświetlam ją na lcd
   lcd.print(" ");
-  lcd.print(wilg);                    // wypisuję zmienną wilg
+  lcd.print(wilg);                    // wypisuje zmienną wilg
   lcd.print("  %");
-  lcd.setCursor(0, 2);                // ustawian kursor na trzeci wiersz
+  lcd.setCursor(0, 2);                // ustawiam kursor na trzeci wiersz
   lcd.write((byte)4); 
-  lcd.setCursor(0, 3);                // ustawian kursor na czwarty wiersz
+  lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
   lcd.print("I");
   lcd.write((byte)3);  
   lcd.print(" Arduino");
