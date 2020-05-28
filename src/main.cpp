@@ -55,6 +55,7 @@
 #include <DHT.h>                // biblioteka odpowiedzialna za DHT
 #include <Wire.h>               // biblioteka odpowiedzialna za I2C
 #include <LiquidCrystal_I2C.h>  // biblioteka odpowiedzialna za LCD I2C
+#include <Rtc_Pcf8563.h>        // biblioteka odpowidzialna za RTC PCF8563
 
 // Uncomment whatever type DHT you're using!
 //#define DHTTYPE DHT11   // DHT 11
@@ -62,6 +63,7 @@
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
 #define DHTPIN 8          // Digital pin na Arduino do korego jest przylaczony DHT
+Rtc_Pcf8563 rtc;          // Init RTC 
 
 /* Fragment odpowiedzialny za wyswietlacz bez I2C
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;   // piny do których podłączony jest wyświetlacz - sterownik HD44780
@@ -87,34 +89,54 @@ byte duck[8]  = {0b00000,0b01100,0b11101,0b01111,0b01111,0b00110,0b00000};
 byte check[8] = {0b00000,0b00001,0b00011,0b10110,0b11100,0b01000,0b00000};
 byte cross[8] = {0b00000,0b11011,0b01110,0b00100,0b01110,0b11011,0b00000};
 byte retarrow[8] = {0b00001,0b00001,0b00101,0b01001,0b11111,0b01000,0b00100};
+byte smile[8] = {0b00000,0b01010,0b00000,0b00000,0b10001,0b01110,0b00000,0b00000};
+byte neutral[8] = {0b00000,0b01010,0b00000,0b00000,0b00000,0b11111,0b00000,0b00000};
+byte sad[8] = {0b00000,0b01010,0b00000,0b00000,0b01110,0b10001,0b00000,0b00000};
+
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);     // uzywane do migania diody tylko do celow testowych
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
 
   Serial.begin(9600);               // inicjacja terminala
   dht.begin();                      // inicjalizacja czujnika
   // lcd.begin(16, 2);              // inicjalizacja LCD bez I2C 16 znakow, 2 wiersze
   lcd.begin();                      // inicjalizacja LCD I2C - tu nie podajemy liczby wieszy i kolumn bo jest w definicji
   Wire.begin();                     // inicjalizacja I2C
+  // rtc.initClock();                  // wyczyszczenie rejestru zegara - odkomentuj w przypadku konieczności resetu
+
+
   lcd.createChar(0, thermo);
   lcd.createChar(1, drop);
   lcd.createChar(2, degrees);
   lcd.createChar(3, heart);
   lcd.createChar(4, clock);
+  lcd.createChar(5, smile);
+  lcd.createChar(6, neutral);
+  lcd.createChar(7, sad);
   
   lcd.home();
   lcd.print("Pomiar ..."); 
   // lcd.noBacklight();            // wylaczenie podswietlenia LCD I2C
 
+  //set a time to start with - uncomment if you need new settings
+  // Set date (day, weekday, month, century(1=1900, 0=2000), year(0-99))
+  // rtc.setDate(28, 6, 4, 5, 20);
+  // Set time (hr, min, sec)
+  // rtc.setTime(20, 17, 0);
+  
   while (!Serial);                 // Arduino: wait for serial monitor
   Serial.println("\nI2C Scanner");
+  Serial.print(rtc.formatDate());
 }
 
 void loop() {
   // blink();                         // uruchomienie migania diody uzywane w celach testowych PCB
-  // scannerI2C();                    // uruchomienie skanera magistrali I2C w celu wyswietlenia adresow urzadzen
+  // scannerI2C();                       // uruchomienie skanera magistrali I2C w celu wyswietlenia adresow urzadzen
 
-  delay(2000);                        // oczekiwanie na pomiar przez czujnik - normalnie zajmuje ok. 250 msek do nawet 2 sek
+  delay(1000);                        // oczekiwanie na pomiar przez czujnik - normalnie zajmuje ok. 250 msek do nawet 2 sek
   float temp = dht.readTemperature(); // tworzę zmienną typu float przechowującą pomiar temperatury
   float wilg = dht.readHumidity();    // tworzę zmienną typu float przechowującą pomiar wilgotności
   if (isnan(temp) || isnan(wilg)) {   // sprawdzam czy nie ma błędu odczytu
@@ -122,7 +144,29 @@ void loop() {
     lcd.print("Blad odczytu");        // wypisuję napis na LCD w przypadku bledu
     return; // wychodzę z pętli
   }
- 
+
+  digitalWrite(2, LOW);
+  digitalWrite(3, LOW);
+  digitalWrite(4, LOW);
+  if (wilg<35){
+    digitalWrite(2, HIGH);
+    lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
+    lcd.write((byte)7);  
+    lcd.print(" humidity");  
+  }
+  if (wilg>35 and wilg<40){
+    digitalWrite(3, HIGH);
+    lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
+    lcd.write((byte)6);  
+    lcd.print(" humidity");  
+  }
+  if (wilg>40) {
+    digitalWrite(4, HIGH);   
+    lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
+    lcd.write((byte)5);  
+    lcd.print(" humidity");                                                
+  }
+
   // wyswietlam dane na LCD
   lcd.home();                         // ustawiam kursor na 0,0 LCD
   lcd.write((byte)0);                 // rzutuje ikonę termometr na typ byte i wyświetlam ją na lcd
@@ -138,18 +182,8 @@ void loop() {
   lcd.print("  %");
   lcd.setCursor(0, 2);                // ustawiam kursor na trzeci wiersz
   lcd.write((byte)4); 
-  lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
-  lcd.print("I");
-  lcd.write((byte)3);  
-  lcd.print(" Arduino");
-  
-  // wyswitlam dane na terminalu
-  Serial.print("T: ");
-  Serial.print(temp);
-  Serial.println(" stC");
-  Serial.print("W: ");
-  Serial.print(wilg);
-  Serial.println(" %");
+  lcd.print(" ");
+  lcd.print(rtc.formatTime());
 }
 
 // definicja funkcji migania diody na PCB
