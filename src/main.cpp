@@ -93,6 +93,9 @@ byte smile[8] = {0b00000,0b01010,0b00000,0b00000,0b10001,0b01110,0b00000,0b00000
 byte neutral[8] = {0b00000,0b01010,0b00000,0b00000,0b00000,0b11111,0b00000,0b00000};
 byte sad[8] = {0b00000,0b01010,0b00000,0b00000,0b01110,0b10001,0b00000,0b00000};
 
+int redPin = 9;
+int greenPin = 10;
+int bluePIN = 11;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);     // uzywane do migania diody tylko do celow testowych
@@ -150,18 +153,27 @@ void loop() {
   digitalWrite(4, LOW);
   if (wilg<35){
     digitalWrite(2, HIGH);
+    analogWrite(redPin, 0);
+    analogWrite(greenPin, 255);
+    analogWrite(bluePIN, 255);
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)7);  
     lcd.print(" humidity");  
   }
   if (wilg>35 and wilg<40){
     digitalWrite(3, HIGH);
+    analogWrite(redPin, 255);
+    analogWrite(greenPin, 0);
+    analogWrite(bluePIN, 255);
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)6);  
     lcd.print(" humidity");  
   }
   if (wilg>40) {
-    digitalWrite(4, HIGH);   
+    digitalWrite(4, HIGH); 
+    analogWrite(redPin, 255);
+    analogWrite(greenPin, 255);
+    analogWrite(bluePIN, 0);  
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)5);  
     lcd.print(" humidity");                                                
