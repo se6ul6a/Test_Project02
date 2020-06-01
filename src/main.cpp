@@ -96,6 +96,7 @@ byte sad[8] = {0b00000,0b01010,0b00000,0b00000,0b01110,0b10001,0b00000,0b00000};
 int redPin = 9;
 int greenPin = 10;
 int bluePIN = 11;
+int pomiarSwiatla;     
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);     // uzywane do migania diody tylko do celow testowych
@@ -137,8 +138,16 @@ void setup() {
 
 void loop() {
   // blink();                         // uruchomienie migania diody uzywane w celach testowych PCB
-  // scannerI2C();                       // uruchomienie skanera magistrali I2C w celu wyswietlenia adresow urzadzen
+  // scannerI2C();                    // uruchomienie skanera magistrali I2C w celu wyswietlenia adresow urzadzen
 
+  pomiarSwiatla = analogRead(A0);     // pomiar swiatla z fotorezystora 
+  Serial.println(pomiarSwiatla);    
+  if (pomiarSwiatla < 350){
+    lcd.noBacklight();
+  } else{
+    lcd.backlight();
+  }
+  
   delay(1000);                        // oczekiwanie na pomiar przez czujnik - normalnie zajmuje ok. 250 msek do nawet 2 sek
   float temp = dht.readTemperature(); // tworzę zmienną typu float przechowującą pomiar temperatury
   float wilg = dht.readHumidity();    // tworzę zmienną typu float przechowującą pomiar wilgotności
@@ -163,8 +172,8 @@ void loop() {
   if (wilg>35 and wilg<40){
     digitalWrite(3, HIGH);
     analogWrite(redPin, 255);
-    analogWrite(greenPin, 0);
-    analogWrite(bluePIN, 255);
+    analogWrite(greenPin, 255);
+    analogWrite(bluePIN, 0);
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)6);  
     lcd.print(" humidity");  
@@ -172,8 +181,8 @@ void loop() {
   if (wilg>40) {
     digitalWrite(4, HIGH); 
     analogWrite(redPin, 255);
-    analogWrite(greenPin, 255);
-    analogWrite(bluePIN, 0);  
+    analogWrite(greenPin, 0);
+    analogWrite(bluePIN, 255);  
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)5);  
     lcd.print(" humidity");                                                
