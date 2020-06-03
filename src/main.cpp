@@ -24,33 +24,6 @@
 // EOC is not used, it signifies an end of conversion
 // XCLR is a reset pin, also not used here
 
-// i2c_scanner - kod uzyty w funkcji scannerI2C
-//
-// Version 1
-//    This program (or code that looks like it)
-//    can be found in many places.
-//    For example on the Arduino.cc forum.
-//    The original author is not know.
-// Version 2, Juni 2012, Using Arduino 1.0.1
-//     Adapted to be as simple as possible by Arduino.cc user Krodal
-// Version 3, Feb 26  2013
-//    V3 by louarnold
-// Version 4, March 3, 2013, Using Arduino 1.0.3
-//    by Arduino.cc user Krodal.
-//    Changes by louarnold removed.
-//    Scanning addresses changed from 0...127 to 1...119,
-//    according to the i2c scanner by Nick Gammon
-//    http://www.gammon.com.au/forum/?id=10896
-// Version 5, March 28, 2013
-//    As version 4, but address scans now to 127.
-//    A sensor seems to use address 120.
-// Version 6, November 27, 2015.
-//    Added waiting for the Leonardo serial communication.
-//
-//
-// This sketch tests the standard 7-bit addresses
-// Devices with higher bit address might not be seen properly.
-
 #include <LiquidCrystal.h>      // biblioteka odpowiedzialna za LCD
 #include <DHT.h>                // biblioteka odpowiedzialna za DHT
 #include <Wire.h>               // biblioteka odpowiedzialna za I2C
@@ -73,10 +46,6 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);                    // tworzę obiekt 
 DHT dht(DHTPIN, DHTTYPE);                                     // tworzę obiekt klasy DHT o nazwie dht o podanych parametrach
 LiquidCrystal_I2C lcd(0x27,20,4);                             // tworze obiekt klasy LCD o adresie 0x27 I2C 20 znakow 4 wiersze
 
-void blink();             // definicja funkcji do migania dioda - uzywana w celach testowych PCB
-void scannerI2C();        // definicja funkcji skanowania magistrali I2C w poszukiwaniu adresu urzadzen
-
-
 // How to write symbols on LCD - see docs folder
 byte thermo[8] = {0b00100,0b00110,0b00100,0b00110,0b00100,0b01110,0b01110,0b00000};
 byte drop[8] = {0b00100,0b00100,0b01110,0b01110,0b10111,0b10111,0b01110,0b00000};
@@ -95,7 +64,7 @@ byte sad[8] = {0b00000,0b01010,0b00000,0b00000,0b01110,0b10001,0b00000,0b00000};
 
 int redPin = 9;
 int greenPin = 10;
-int bluePIN = 11;
+int bluePin = 11;
 int pomiarSwiatla;     
 
 void setup() {
@@ -109,8 +78,6 @@ void setup() {
   // lcd.begin(16, 2);              // inicjalizacja LCD bez I2C 16 znakow, 2 wiersze
   lcd.begin();                      // inicjalizacja LCD I2C - tu nie podajemy liczby wieszy i kolumn bo jest w definicji
   Wire.begin();                     // inicjalizacja I2C
-  // rtc.initClock();                  // wyczyszczenie rejestru zegara - odkomentuj w przypadku konieczności resetu
-
 
   lcd.createChar(0, thermo);
   lcd.createChar(1, drop);
@@ -123,23 +90,16 @@ void setup() {
   
   lcd.home();
   lcd.print("Pomiar ..."); 
-  // lcd.noBacklight();            // wylaczenie podswietlenia LCD I2C
 
+  // rtc.initClock();                  // wyczyszczenie rejestru zegara - odkomentuj w przypadku konieczności resetu
   //set a time to start with - uncomment if you need new settings
   // Set date (day, weekday, month, century(1=1900, 0=2000), year(0-99))
-  // rtc.setDate(28, 6, 4, 5, 20);
+  // rtc.setDate(2, 1, 6, 0, 20);
   // Set time (hr, min, sec)
-  // rtc.setTime(20, 17, 0);
-  
-  while (!Serial);                 // Arduino: wait for serial monitor
-  Serial.println("\nI2C Scanner");
-  Serial.print(rtc.formatDate());
+  // rtc.setTime(16, 58, 0);
 }
 
 void loop() {
-  // blink();                         // uruchomienie migania diody uzywane w celach testowych PCB
-  // scannerI2C();                    // uruchomienie skanera magistrali I2C w celu wyswietlenia adresow urzadzen
-
   pomiarSwiatla = analogRead(A0);     // pomiar swiatla z fotorezystora 
   Serial.println(pomiarSwiatla);    
   if (pomiarSwiatla < 350){
@@ -147,7 +107,7 @@ void loop() {
   } else{
     lcd.backlight();
   }
-  
+
   delay(1000);                        // oczekiwanie na pomiar przez czujnik - normalnie zajmuje ok. 250 msek do nawet 2 sek
   float temp = dht.readTemperature(); // tworzę zmienną typu float przechowującą pomiar temperatury
   float wilg = dht.readHumidity();    // tworzę zmienną typu float przechowującą pomiar wilgotności
@@ -164,7 +124,7 @@ void loop() {
     digitalWrite(2, HIGH);
     analogWrite(redPin, 0);
     analogWrite(greenPin, 255);
-    analogWrite(bluePIN, 255);
+    analogWrite(bluePin, 255);
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)7);  
     lcd.print(" humidity");  
@@ -173,7 +133,7 @@ void loop() {
     digitalWrite(3, HIGH);
     analogWrite(redPin, 255);
     analogWrite(greenPin, 255);
-    analogWrite(bluePIN, 0);
+    analogWrite(bluePin, 0);
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)6);  
     lcd.print(" humidity");  
@@ -182,7 +142,7 @@ void loop() {
     digitalWrite(4, HIGH); 
     analogWrite(redPin, 255);
     analogWrite(greenPin, 0);
-    analogWrite(bluePIN, 255);  
+    analogWrite(bluePin, 255);  
     lcd.setCursor(0, 3);                // ustawiam kursor na czwarty wiersz
     lcd.write((byte)5);  
     lcd.print(" humidity");                                                
@@ -205,54 +165,4 @@ void loop() {
   lcd.write((byte)4); 
   lcd.print(" ");
   lcd.print(rtc.formatTime());
-}
-
-// definicja funkcji migania diody na PCB
-void blink() {
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(100);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
-}
-
-// definicja funkcji do skanowania I2C w celu poszukiwania adresow urzadzen
-void scannerI2C() {
-  byte error, address;
-  int nDevices;
- 
-  Serial.println("Scanning...");
- 
-  nDevices = 0;
-  for(address = 1; address < 127; address++ )
-  {
-    // The i2c_scanner uses the return value of
-    // the Write.endTransmisstion to see if
-    // a device did acknowledge to the address.
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
- 
-    if (error == 0)
-    {
-      Serial.print("I2C device found at address 0x");
-      if (address<16)
-        Serial.print("0");
-      Serial.print(address,HEX);
-      Serial.println("  !");
- 
-      nDevices++;
-    }
-    else if (error==4)
-    {
-      Serial.print("Unknown error at address 0x");
-      if (address<16)
-        Serial.print("0");
-      Serial.println(address,HEX);
-    }    
-  }
-  if (nDevices == 0)
-    Serial.println("No I2C devices found\n");
-  else
-    Serial.println("done\n");
- 
-  delay(5000);           // wait 5 seconds for next scan
 }
